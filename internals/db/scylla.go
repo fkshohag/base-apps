@@ -94,6 +94,41 @@ func (c *ScyllaClient) GetUsers() ([]models.User, error) {
 	fmt.Println(":::::::::::::::::::::::::::::::::::::::::::::::::::")
 	return users, nil
 }
+
+func (c *ScyllaClient) GetStudents() ([]models.Student, error) {
+	var students []models.Student
+	query := `
+		SELECT id, name, department, roll, email, semester, batch_year FROM students;
+	`
+	iter := c.session.Query(query).Iter()
+	var (
+		id         string
+		name       string
+		department string
+		roll       string
+		email      string
+		semester   int
+		batchYear  int
+	)
+
+	for iter.Scan(&id, &name, &department, &roll, &email, &semester, &batchYear) {
+		students = append(students, models.Student{
+			ID:         id,
+			Name:       name,
+			Department: department,
+			Roll:       roll,
+			Email:      email,
+			Semester:   semester,
+			BatchYear:  batchYear,
+		})
+	}
+	if err := iter.Close(); err != nil {
+		return nil, err
+	}
+
+	return students, nil
+}
+
 func (c *ScyllaClient) Close() {
 	c.session.Close()
 }
