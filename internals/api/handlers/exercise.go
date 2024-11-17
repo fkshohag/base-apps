@@ -4,14 +4,21 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"xyz-task-2/internals/services/recommendation"
+	"xyz-task-2/internals/models"
 )
 
-type ExerciseHandler struct {
-	service *recommendation.Service
+// ExerciseService defines the interface for exercise-related operations
+type ExerciseService interface {
+	GetExerciseRecommendation(userID string) (models.ExerciseRecommendation, error)
 }
 
-func NewExerciseHandler(service *recommendation.Service) *ExerciseHandler {
+// ExerciseHandler struct
+type ExerciseHandler struct {
+	service ExerciseService
+}
+
+// NewExerciseHandler constructor
+func NewExerciseHandler(service ExerciseService) *ExerciseHandler {
 	return &ExerciseHandler{service: service}
 }
 
