@@ -10,7 +10,8 @@ services:
         condition: service_healthy
 
   scylla:
-    image: scylladb/scylla:4.5.0
+    image: scylladb/scylla:5.2.13
+    restart: always
     ports:
       - "9042:9042"
     healthcheck:
@@ -18,8 +19,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  volumes:
-      - ./scylladata:/var/lib/scylla
+    volumes:
+        - ./scylladata:/var/lib/scylla
   
 
   redis:
