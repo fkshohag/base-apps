@@ -18,6 +18,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  volumes:
+      - ./scylladata:/var/lib/scylla
+  
 
   redis:
     image: redis:6.2-alpine
