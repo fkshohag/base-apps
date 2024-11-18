@@ -1,17 +1,14 @@
 package students
 
 import (
+	"xyz-task-2/internals/db"
 	"xyz-task-2/internals/models"
 )
 
-// StudentRepository defines the interface for student data operations
-type StudentRepository interface {
-	GetStudents() ([]models.Student, error)
-}
-
 // Service struct now uses the interface instead of concrete implementation
 type Service struct {
-	repository StudentRepository
+	scyllaClient *db.ScyllaClient
+	redisClient  *db.RedisClient
 }
 
 // Create implements handlers.StudentService.
@@ -40,12 +37,17 @@ func (s *Service) Update(id string, student *models.Student) error {
 }
 
 // NewService now accepts the interface
-func NewService(repository StudentRepository) *Service {
+func NewService(scyllaClient *db.ScyllaClient, redisClient *db.RedisClient) *Service {
 	return &Service{
-		repository: repository,
+		scyllaClient: scyllaClient,
+		redisClient:  redisClient,
 	}
 }
 
 func (s *Service) GetStudents() ([]models.Student, error) {
-	return s.repository.GetStudents()
+	students, err := s.scyllaClient.GetStudents()
+	if err != nil {
+		return nil, err
+	}
+	return students, nil
 }

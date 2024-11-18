@@ -28,6 +28,10 @@ var (
 	}
 )
 
+var (
+	departments = []string{"Computer Science", "Electrical Engineering", "Mechanical Engineering", "Civil Engineering"}
+)
+
 func init() {
 	cfg, err := configs.Load()
 	if err != nil {
@@ -69,6 +73,7 @@ func dropTables() error {
 		"DROP TABLE IF EXISTS users",
 		"DROP TABLE IF EXISTS user_errors",
 		"DROP TABLE IF EXISTS error_frequencies",
+		"DROP TABLE IF EXISTS students",
 	}
 
 	for _, query := range queries {
@@ -102,6 +107,15 @@ func createTables() error {
 		    frequency counter,
 		    PRIMARY KEY ((user_id), error_category, error_subcategory)
 		);`,
+		`CREATE TABLE IF NOT EXISTS students (
+			id UUID PRIMARY KEY,
+			name TEXT,
+			department TEXT,
+			roll TEXT,
+			email TEXT,
+			semester INT,
+			batch_year INT
+		)`,
 	}
 	// Improvements needed, this is a bad approach
 	for _, query := range queries {
@@ -159,6 +173,10 @@ func populateData() error {
 		}
 	}
 
+	if err := generateAndInsertStudents(10); err != nil {
+		return fmt.Errorf("failed to populate students data: %v", err)
+	}
+
 	return nil
 }
 
@@ -176,4 +194,37 @@ func generateUsers(count int) []models.User {
 func insertUser(user models.User) error {
 	query := "INSERT INTO users (id, username) VALUES (?, ?)"
 	return scyllaClient.Execute(query, user.ID, user.Username)
+}
+
+func generateAndInsertStudents(count int) error {
+	for i := 0; i < count; i++ {
+		student := models.Student{
+			ID:         gocql.TimeUUID().String(),
+			Name:       fmt.Sprintf("Student %d", i+1),
+			Department: departments[rand.Intn(len(departments))],
+			Roll:       fmt.Sprintf("2024%03d", i+1),
+			Email:      fmt.Sprintf("student%d@university.edu", i+1),
+			Semester:   rand.Intn(8) + 1,
+			BatchYear:  2020 + rand.Intn(4),
+		}
+
+		query := `
+			INSERT INTO students 
+			(id, name, department, roll, email, semester, batch_year) 
+			VALUES (?, ?, ?, ?, ?, ?, ?)
+		`
+		if err := scyllaClient.Execute(query,
+			student.ID,
+			student.Name,
+			student.Department,
+			student.Roll,
+			student.Email,
+			student.Semester,
+			student.BatchYear,
+		); err != nil {
+			return fmt.Errorf("failed to insert student: %v", err)
+		}
+		fmt.Printf("Inserted student: %s\n", student.Name)
+	}
+	return nil
 }
