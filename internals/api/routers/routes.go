@@ -36,7 +36,16 @@ func SetupRoutes(scyllaClient *db.ScyllaClient, redisClient *db.RedisClient) *mu
 	api := router.PathPrefix("/api").Subrouter()
 	api.HandleFunc("/generate-exercise", exerciseHandler.GenerateExercise).Methods("GET")
 	api.HandleFunc("/users", usersHandler.GetUsers).Methods("GET")
+
+	// Student routes
 	api.HandleFunc("/students", studentsHandler.GetStudents).Methods("GET")
+	api.HandleFunc("/students", studentsHandler.GetStudents).Methods("GET")
+	api.HandleFunc("/students", studentsHandler.Create).Methods("POST")
+	api.HandleFunc("/students/{id}", studentsHandler.Delete).Methods("DELETE")
+	api.HandleFunc("/students/{id}", studentsHandler.Update).Methods("PUT")
+	api.HandleFunc("/students/{id}", studentsHandler.GetByID).Methods("GET")
+
+	// ... rest of the code ...
 
 	return router
 }
